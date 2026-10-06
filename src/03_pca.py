@@ -1,4 +1,4 @@
-"""전체 PCA와 인프라·차량의존·고령화 지수 생성."""
+"""전체 요인 검증용 PCA와 세 변수 PCA 종합지수 생성."""
 from pathlib import Path
 
 import numpy as np
@@ -6,7 +6,8 @@ import pandas as pd
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
-from utils import PREDICTORS, make_dirs, load_dataset, require_variation, save_csv, validate
+from utils import (PREDICTORS, COMPOSITE, build_composite, make_dirs,
+                   load_dataset, require_variation, save_csv, validate)
 
 ROOT = Path(__file__).resolve().parents[1]
 TABLES = ROOT / "output" / "tables"
@@ -32,29 +33,20 @@ def main():
     for sign, label in [(1, "양의 방향"), (-1, "음의 방향")]:
         strong = [v for j, v in enumerate(variables) if sign * loadings[j, 0] >= .5]
         print(f"PC1 강한 적재(|적재값|>=0.5), {label}: {', '.join(strong) or '없음'}")
-    pair = z[:, 1:3]
-    pair_pca = PCA(n_components=1, svd_solver="full").fit(pair)
-    weights = pair_pca.components_[0].copy()
-    # 부호 임의성을 제거하여 자가용등록대수 증가 방향을 양수로 통일한다.
-    orientation = 1 if weights[0] >= 0 else -1
-    score = pair_pca.transform(pair)[:, 0] * orientation
-    z_mean = pair.mean(axis=1)
-    correlation = np.corrcoef(pair.T)[0, 1]
+    score, details = build_composite(data)
+    save_csv(details, TABLES / "pca_loadings_composite.csv")
+    print(details.to_string(index=False))
+    z_mean = z[:, :3].mean(axis=1)
     ranks = pd.Series(score).rank()
     mean_ranks = pd.Series(z_mean).rank()
     same = np.array_equal(ranks, mean_ranks)
-    print(f"차량 두 변수 상관 r={correlation:.6f}, PC1과 두 변수 z평균의 순위 일치: {same}")
-    # 두 표준화 변수의 상관이 양수일 때만 PC1 = sqrt(2) * z평균이다.
-    # 음의 상관이면 PC1은 차이 방향이며, 0이면 첫 축이 유일하지 않다.
-    if correlation > 1e-10:
-        assert np.allclose(score, np.sqrt(2) * z_mean), "양의 상관에서 PCA/z평균 관계 오류"
-    else:
-        print("주의: 상관이 양수가 아니므로 PCA와 z평균의 동일 순위는 보장되지 않습니다.")
-    comparison = pd.DataFrame({"시도명": data["시도명"], "차량PC1": score,
-                               "차량의존지수": z_mean, "PCA순위": ranks, "z평균순위": mean_ranks})
+    # 세 변수에서는 PCA와 동일 가중 z평균의 동등성을 가정하지 않는다.
+    print(f"참고: 세 변수 PC1과 z평균의 순위 일치: {same} (동일성 보장 없음)")
+    comparison = pd.DataFrame({"시도명": data["시도명"], COMPOSITE: score,
+                               "세변수z평균": z_mean, "PCA순위": ranks, "z평균순위": mean_ranks})
     save_csv(comparison, TABLES / "pca_index_comparison.csv")
-    data["인프라지수"] = z[:, 0]
-    data["차량의존지수"] = z_mean
+    data[COMPOSITE] = score
+    # 고령화지수는 참고용으로 보관하며 회귀·유형화에서는 제외한다.
     data["고령화지수"] = z[:, 3]
     validate(data)
     save_csv(data, ROOT / "output" / "processed" / "analysis_dataset_with_indices.csv")

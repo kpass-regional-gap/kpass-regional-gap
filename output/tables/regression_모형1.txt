@@ -1,39 +1,33 @@
-모형1: 미경험률 ~ 인프라지수 + 차량의존지수 + 고령화지수
+모형1: 미경험률 ~ 인프라차량종합지수
 
                             OLS Regression Results                            
 ==============================================================================
-Dep. Variable:                   미경험률   R-squared:                       0.793
-Model:                            OLS   Adj. R-squared:                  0.746
-Method:                 Least Squares   F-statistic:                     16.65
-Date:                Mon, 28 Sep 2026   Prob (F-statistic):           9.71e-05
-Time:                        05:54:27   Log-Likelihood:                -48.802
-No. Observations:                  17   AIC:                             105.6
-Df Residuals:                      13   BIC:                             108.9
-Df Model:                           3                                         
+Dep. Variable:                   미경험률   R-squared:                       0.637
+Model:                            OLS   Adj. R-squared:                  0.613
+Method:                 Least Squares   F-statistic:                     26.34
+Date:                Tue, 06 Oct 2026   Prob (F-statistic):           0.000123
+Time:                        22:22:07   Log-Likelihood:                -53.591
+No. Observations:                  17   AIC:                             111.2
+Df Residuals:                      15   BIC:                             112.8
+Df Model:                           1                                         
 Covariance Type:            nonrobust                                         
 ==============================================================================
                  coef    std err          t      P>|t|      [0.025      0.975]
 ------------------------------------------------------------------------------
-const         72.9588      1.184     61.596      0.000      70.400      75.518
-인프라지수          8.9359      2.386      3.746      0.002       3.782      14.090
-차량의존지수         1.4666      1.841      0.796      0.440      -2.511       5.445
-고령화지수         -2.0943      2.003     -1.045      0.315      -6.422       2.233
+const         72.9588      1.462     49.920      0.000      69.844      76.074
+인프라차량종합지수      5.2852      1.030      5.133      0.000       3.090       7.480
 ==============================================================================
-Omnibus:                        0.805   Durbin-Watson:                   2.267
-Prob(Omnibus):                  0.669   Jarque-Bera (JB):                0.733
-Skew:                          -0.427   Prob(JB):                        0.693
-Kurtosis:                       2.446   Cond. No.                         3.77
+Omnibus:                        1.213   Durbin-Watson:                   1.997
+Prob(Omnibus):                  0.545   Jarque-Bera (JB):                0.858
+Skew:                          -0.210   Prob(JB):                        0.651
+Kurtosis:                       1.983   Cond. No.                         1.42
 ==============================================================================
 
 Notes:
 [1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
 
 표준화계수 (X와 Y 모두 표준화, 절편 제외)
-인프라지수     0.950904
-차량의존지수    0.136910
-고령화지수    -0.222863
+인프라차량종합지수    0.79824
 
 VIF (절편을 포함한 설계행렬로 계산)
-인프라지수     4.056535
-차량의존지수    1.859819
-고령화지수     2.860154
+인프라차량종합지수    1.0

@@ -59,3 +59,29 @@ def require_variation(frame):
 
 def save_csv(frame, path, index=False):
     frame.to_csv(path, index=index, encoding="utf-8-sig")
+
+
+COMPOSITE = "인프라차량종합지수"
+
+
+def build_composite(data, headway="주간평균배차간격"):
+    """세 변수 표준화 후 PC1 생성. 배차간격 증가 방향으로 부호 고정."""
+    from sklearn.decomposition import PCA
+    from sklearn.preprocessing import StandardScaler
+
+    columns = [headway, "1인당자가용등록대수", "1일평균주행거리"]
+    values = data[columns]
+    require_variation(values)
+    assert np.isfinite(values.to_numpy()).all(), "PCA 입력 결측 또는 비정상 수치"
+    z = StandardScaler().fit_transform(values)
+    pca = PCA(svd_solver="full").fit(z)
+    orientation = 1 if pca.components_[0, 0] >= 0 else -1
+    scores = pca.transform(z)[:, 0] * orientation
+    weights = pca.components_[0] * orientation
+    loadings = [np.corrcoef(z[:, j], scores)[0, 1] for j in range(3)]
+    details = pd.DataFrame({"변수명": columns, "PC1가중치": weights,
+                            "상관적재값": loadings,
+                            "PC1설명분산비율": pca.explained_variance_ratio_[0]})
+    if not (weights > 0).all():
+        print("경고: 종합지수의 세 가중치가 모두 양수가 아닙니다. 지수 방향을 점검하세요.")
+    return scores, details

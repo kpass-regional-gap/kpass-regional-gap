@@ -4,12 +4,11 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
-from sklearn.preprocessing import StandardScaler
 
-from utils import load_dataset, make_dirs, require_variation, save_csv
+from utils import COMPOSITE, build_composite, load_dataset, make_dirs, require_variation, save_csv
 
 ROOT = Path(__file__).resolve().parents[1]
-FACTORS = ["인프라지수", "차량의존지수", "고령화지수"]
+FACTORS = [COMPOSITE]
 
 
 def fit_model(data):
@@ -32,8 +31,10 @@ def main():
     # 부호가 아니라 절댓값 잔차가 가장 큰 한 지역을 전체 17개에서 제외한다.
     outlier = data.loc[baseline.resid.abs().idxmax(), "시도명"]
     weekday = data.copy()
-    require_variation(weekday[["평일평균배차간격"]])
-    weekday["인프라지수"] = StandardScaler().fit_transform(weekday[["평일평균배차간격"]])[:, 0]
+    # 배차간격 정의를 교체하는 조건은 전체 17개에서 표준화와 PCA를 다시 적합한다.
+    # 지역 제외 조건은 전체 표본에서 만든 원래 지수를 고정하여 회귀 민감도를 본다.
+    weekday[COMPOSITE], weekday_details = build_composite(weekday, "평일평균배차간격")
+    save_csv(weekday_details, ROOT / "output" / "tables" / "pca_loadings_weekday.csv")
     cases = [
         ("기준 모형", data),
         ("수도권 제외", data.loc[~data["시도명"].isin(["서울특별시", "인천광역시", "경기도"])]),

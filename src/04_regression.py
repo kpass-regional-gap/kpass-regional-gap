@@ -7,7 +7,7 @@ from sklearn.preprocessing import StandardScaler
 import statsmodels.api as sm
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 
-from utils import make_dirs, load_dataset, require_variation
+from utils import COMPOSITE, make_dirs, load_dataset, require_variation, save_csv
 
 ROOT = Path(__file__).resolve().parents[1]
 TABLES = ROOT / "output" / "tables"
@@ -19,9 +19,10 @@ def main():
     extra = ["성인대중교통이용률", "월평균대중교통비"]
     require_variation(data[extra + ["미경험률"]])
     data[[f"{v}(z)" for v in extra]] = StandardScaler().fit_transform(data[extra])
-    base = ["인프라지수", "차량의존지수", "고령화지수"]
+    base = [COMPOSITE]
     models = [base, base + ["성인대중교통이용률(z)"], base + ["월평균대중교통비(z)"]]
     y = data["미경험률"]
+    coefficient_rows = []
     for number, variables in enumerate(models, 1):
         assert len(variables) <= 4, "절편 제외 설명변수는 4개 이하로 제한합니다."
         if len(variables) == 4:
@@ -33,6 +34,12 @@ def main():
         fit = sm.OLS(y, design, missing="raise").fit()
         # 종속·독립변수 모두 표준화했을 때의 계수와 같은 beta이다.
         beta = fit.params[variables] * x.std(ddof=0) / y.std(ddof=0)
+        for variable in variables:
+            coefficient_rows.append({"모형": f"모형{number}", "변수명": variable,
+                                     "계수": fit.params[variable], "표준화계수": beta[variable],
+                                     "p_value": fit.pvalues[variable], "R2": fit.rsquared,
+                                     "수정R2": fit.rsquared_adj, "n": int(fit.nobs)})
+        print(f"모형{number} 종합지수 p-value={fit.pvalues[COMPOSITE]:.9g}")
         vif = pd.Series({v: variance_inflation_factor(design.to_numpy(), j + 1)
                          for j, v in enumerate(variables)}, name="VIF")
         report = (f"모형{number}: 미경험률 ~ {' + '.join(variables)}\n\n"
@@ -44,7 +51,8 @@ def main():
         largest = residuals.loc[residuals["잔차"].abs().nlargest(3).index]
         print(f"모형{number}: n={int(fit.nobs)}, R²={fit.rsquared:.4f}, 절댓값 잔차 상위 3개 지역")
         print(largest.to_string(index=False))
-    print("OLS 모형 3개 보고서 저장 완료")
+    save_csv(pd.DataFrame(coefficient_rows), TABLES / "regression_coefficients.csv")
+    print("OLS 모형 3개 보고서 및 계수표 저장 완료")
 
 
 if __name__ == "__main__":

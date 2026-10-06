@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
-from utils import load_dataset, make_dirs, save_csv
+from utils import COMPOSITE, load_dataset, make_dirs, save_csv
 
 ROOT = Path(__file__).resolve().parents[1]
 ROBUSTNESS = import_module("05_robustness")
@@ -20,15 +20,8 @@ FACTORS = ROBUSTNESS.FACTORS
 def classify(values):
     if len(values) == 0:
         return "판정유보(유의요인없음)"
-    ordered = values.sort_values(ascending=False)
-    if ordered.iloc[0] <= 0:
-        return "양호형"
-    # 양수인 요인이 하나뿐이면 그 요인의 유형. 둘 이상일 때 상위 두 값을 비교한다.
-    positive = ordered[ordered > 0]
-    if len(positive) == 1 or positive.iloc[0] - positive.iloc[1] >= .5:
-        return {"인프라지수": "인프라취약형", "차량의존지수": "차량의존형",
-                "구조요인z평균": "구조취약형", "고령화지수": "고령화형"}[positive.index[0]]
-    return "복합취약형"
+    assert list(values.index) == [COMPOSITE], "종합지수 단일 축을 사용합니다."
+    return "양호형" if values.iloc[0] <= 0 else "인프라·차량의존 취약형"
 
 
 def main():
@@ -46,23 +39,15 @@ def main():
         assert np.isclose(baseline[f"{factor}_표준화계수"], beta[factor]), "05단계를 다시 실행하세요."
     significant = [f for f in FACTORS if baseline[f"{f}_p"] < .05]
     print(f"기준 모형 유의 요인(p<0.05): {', '.join(significant) or '없음'}")
-    # 차량 지수는 두 z의 평균이므로 분산이 1이 아니다. 0.5 차이 비교를 위해
-    # 유형화에서만 세 지수를 다시 표준화한다. 03의 저장 지수 정의는 유지한다.
+    # 유형화에서만 PC1 점수를 z표준화한다. 회귀에는 원래 PC1 점수를 사용한다.
     z = pd.DataFrame(StandardScaler().fit_transform(data[FACTORS]), columns=FACTORS)
     axes = z[significant].copy()
-    influence = beta.abs().to_dict()
-    if {"인프라지수", "차량의존지수"}.issubset(significant):
-        axes = axes.drop(columns=["인프라지수", "차량의존지수"])
-        axes["구조요인z평균"] = z[["인프라지수", "차량의존지수"]].mean(axis=1)
-        influence["구조요인z평균"] = beta[["인프라지수", "차량의존지수"]].abs().mean()
-    ordered_axes = sorted(axes.columns, key=lambda f: influence[f], reverse=True)
+    ordered_axes = list(axes.columns)
     result = data[["시도명"]].copy()
     result["유형"] = [classify(row) for _, row in axes.iterrows()]
     for factor in FACTORS:
         result[f"{factor}_z"] = z[factor]
         result[f"{factor}_유의"] = factor in significant
-    if "구조요인z평균" in axes:
-        result["구조요인z평균"] = axes["구조요인z평균"]
     result["판정축"] = ", ".join(ordered_axes) or "없음"
     assert len(result) == 17 and not result.isna().any().any()
     save_csv(result, ROOT / "output" / "tables" / "region_typology.csv")
@@ -87,7 +72,6 @@ def main():
                     textcoords="offset points", fontsize=8,
                     arrowprops={"arrowstyle": "-", "color": "gray", "lw": .5})
     ax.axvline(0, color="gray", linestyle="--", linewidth=1)
-    ax.axhline(0, color="gray", linestyle="--", linewidth=1)
     ax.set(xlabel=ordered_axes[0] if ordered_axes else "유의 요인 없음",
            ylabel=ordered_axes[1] if len(ordered_axes) > 1 else "지역 표시 위치 (두 번째 유의 요인 없음)",
            title="유의 요인에 따른 시도 유형 (탐색적 분류)")
