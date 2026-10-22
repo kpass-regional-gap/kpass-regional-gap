@@ -105,29 +105,57 @@ PCA 적재값은 변수와 주성분 점수의 상관계수로 정의하고, 고
 
 모든 값은 아래 출처의 화면·첨부파일에서 2026-10-22에 조회해 옮겼다. 옮겨 적은 뒤 원자료의 합계 행과 대조하는 검증을 코드에 넣었다(연료별 합=계, 시도 합=전국, 배기량별 합=소계).
 
-| 파일 | 출처 | 조회 조건·사용 범위 |
-| --- | --- | --- |
-| `tmacs_2024_nonbusiness_passenger_km_by_fuel.csv` | 한국교통안전공단 TMACS > 자동차 주행거리통계 > 차종별 연료별 주행거리 (https://tmacs.kotsa.or.kr/web/TG/TG200/TG2200/Tg1700_02.jsp?mid=S3080) | 2024년, 비사업용, 승용차. 연간 주행거리(천km)는 분석용, 1일 주행거리(km/대)는 대조용 |
-| `molit_registration_2024_06_nonbusiness_passenger_by_fuel.csv` | 국토교통부 자동차등록현황보고, 「2024년 06월 자동차 등록자료 통계.xlsx」 시트 `10.연료별_등록현황` (https://stat.molit.go.kr/portal/cate/statMetaView.do?hRsId=58) | 승용 · 비사업용(관용+자가용) 연료별 등록대수 |
-| `mois_population_2024_06.csv` | 행정안전부 주민등록 인구 및 세대현황 (https://jumin.mois.go.kr/statMonth.do) | 2024년 6월, 전체(거주자+거주불명자+재외국민) 총인구 |
-| `energy_census_2023_passenger.csv` | 에너지경제연구원 「2023년도(2022년 기준) 에너지총조사 보고서」, KESIS (https://kesis.keei.re.kr/board.es?mid=a10301060000&bid=0004) | 표 2-1-1 전국 자가용 연료소비량(kl)·열량(Tcal), 426쪽 / 표 2-2-2 경유차·2-2-3 LPG차 대당 주행거리·연비·소비량, 444~445쪽. 승용 경유·LPG 행만 |
-| `emission_coefficients.csv` | 한국에너지공단 EG-TIPS 「에너지 발열량 및 온실가스 배출계수」의 에너지열량 환산기준(2022.11)·연료연소 부문 배출계수(2022.1) (https://tips.energy.or.kr/carbon/Ggas_tatistics03.do), 온실가스종합정보센터 「2025년 승인 국가 온실가스 배출·흡수계수」 (https://www.gir.go.kr/home/board/read.do?menuId=36&boardId=86&boardMasterId=2) | 경유 순발열량 35.3 MJ/l·탄소배출계수 20.09 tC/TJ, 부탄 총발열량 11,790 kcal/kg·순발열량 45.5 MJ/kg·탄소배출계수 18.094 tC/TJ, 2023년 소비단 전력 CO₂ 0.4149 tCO₂/MWh. 전비 4.5·5.0·5.5 km/kWh와 a=b=1%는 보고서의 가정 |
+**1. `tmacs_2024_nonbusiness_passenger_km_by_fuel.csv`**
 
-- 같은 값이 EG-TIPS 배출량 계산기(https://tips.energy.or.kr/popup/toe.do)의 '국가고유(22년)'·'국가고유(25년)'에도 표시된다.
+- 출처: 한국교통안전공단 TMACS > 자동차 주행거리통계 > 차종별 연료별 주행거리 ([tmacs.kotsa.or.kr](https://tmacs.kotsa.or.kr/web/TG/TG200/TG2200/Tg1700_02.jsp?mid=S3080))
+- 조회 조건: 2024년, 비사업용, 승용차
+- 사용: 연간 주행거리(천km)는 분석에, 1일 주행거리(km/대)는 대조용으로 쓴다.
+
+**2. `molit_registration_2024_06_nonbusiness_passenger_by_fuel.csv`**
+
+- 출처: 국토교통부 자동차등록현황보고, 「2024년 06월 자동차 등록자료 통계.xlsx」의 `10.연료별_등록현황` 시트 ([stat.molit.go.kr](https://stat.molit.go.kr/portal/cate/statMetaView.do?hRsId=58))
+- 사용: 승용·비사업용(관용+자가용) 연료별 등록대수
+
+**3. `mois_population_2024_06.csv`**
+
+- 출처: 행정안전부 주민등록 인구 및 세대현황 ([jumin.mois.go.kr](https://jumin.mois.go.kr/statMonth.do))
+- 조회 조건: 2024년 6월, 전체(거주자+거주불명자+재외국민)
+- 사용: 시도별 총인구
+
+**4. `energy_census_2023_passenger.csv`**
+
+- 출처: 에너지경제연구원 「2023년도(2022년 기준) 에너지총조사 보고서」 ([KESIS](https://kesis.keei.re.kr/board.es?mid=a10301060000&bid=0004))
+- 사용한 표: 표 2-1-1 전국 자가용 연료소비량(kl)·열량(Tcal)(426쪽), 표 2-2-2 경유차·표 2-2-3 LPG차의 대당 주행거리·연비·소비량(444~445쪽). 승용 경유·LPG 행만 저장했다.
+
+**5. `emission_coefficients.csv`**
+
+- 출처: 한국에너지공단 EG-TIPS 「에너지 발열량 및 온실가스 배출계수」의 에너지열량 환산기준(2022.11)·연료연소 부문 배출계수(2022.1) ([tips.energy.or.kr](https://tips.energy.or.kr/carbon/Ggas_tatistics03.do)), 온실가스종합정보센터 「2025년 승인 국가 온실가스 배출·흡수계수」 ([gir.go.kr](https://www.gir.go.kr/home/board/read.do?menuId=36&boardId=86&boardMasterId=2))
+- 출처값: 경유 순발열량 35.3 MJ/l, 탄소배출계수 20.09 tC/TJ / 부탄 총발열량 11,790 kcal/kg, 순발열량 45.5 MJ/kg, 탄소배출계수 18.094 tC/TJ / 2023년 소비단 전력 CO₂ 0.4149 tCO₂/MWh
+- 가정값(보고서 설정): 전기차 전비 4.5·5.0·5.5 km/kWh, 시나리오 a=b=1%
+
+참고:
+
+- 같은 계수가 [EG-TIPS 배출량 계산기](https://tips.energy.or.kr/popup/toe.do)의 '국가고유(22년)'·'국가고유(25년)'에도 표시된다.
 - GIR 2025년 승인 계수에서 2023년 소비단 전력은 CO₂ 0.4149 tCO₂/MWh, CO₂-eq 0.4173 tCO₂-eq/MWh다. 보고서와 코드는 CO₂ 계수를 쓴다.
-- 종속변수(`dependent_variable.csv`)의 조사는 기후정치바람 보도자료(녹색전환연구소 게시, 2026-04-08, https://igt.or.kr/bbs/board.php?bo_table=m03_03&wr_id=68)에서 조사 시점(2026년 2월), 대상(17개 시도 만 18세 이상 17,865명), 강원 14.0%·충북 16.7%와 도 단위 6곳 20% 미만을 확인했다. 17개 시도 전체 값은 기존 파일을 그대로 사용했다.
+- 종속변수(`dependent_variable.csv`)의 조사는 [기후정치바람 보도자료](https://igt.or.kr/bbs/board.php?bo_table=m03_03&wr_id=68)(녹색전환연구소 게시, 2026-04-08)에서 조사 시점(2026년 2월), 대상(17개 시도 만 18세 이상 17,865명), 강원 14.0%·충북 16.7%, 도 단위 6곳 20% 미만을 확인했다. 17개 시도 전체 값은 기존 파일을 그대로 쓴다.
 
 ## 배출계수 산정(08)
 
 차형·배기량별 차량km는 `연료소비량(l) ÷ 대당 연간 소비량(l/대) × 대당 연간 주행거리(km/대)`로 구한다. 표의 연비는 소수 첫째 자리로 반올림되어 있어 대당 주행거리÷대당 소비량을 연비로 쓴다. 차종 전체의 gCO₂/km는 `ΣCO₂ ÷ Σ차량km`이다.
 
-| 구분 | 리터당 CO₂ | 차량km 가중 연비 | gCO₂/km |
-| --- | --- | --- | --- |
-| 경유 | 35.3 MJ/l × 20.09 tC/TJ × 44/12 = 2,600.3 g/l | 8.745 km/l | 297.34 |
-| LPG(부탄 가정) | 0.5773 kg/l × 45.5 MJ/kg × 18.094 tC/TJ × 44/12 = 1,742.8 g/l | 7.459 km/l | 233.65 |
-| 전기차 | 414.9 g/kWh | 4.5 / 5.0 / 5.5 km/kWh | 92.20 / 82.98 / 75.44 |
+```text
+경유    gCO₂/l  = 35.3 MJ/l × 20.09 tC/TJ × 44/12                    = 2,600.3
+LPG     gCO₂/l  = 0.5773 kg/l × 45.5 MJ/kg × 18.094 tC/TJ × 44/12     = 1,742.8
+전기차  gCO₂/km = 414.9 g/kWh ÷ 전비(km/kWh)
+```
 
-LPG 밀도 0.5773 kg/l는 에너지총조사 표 2-1-1의 승용 LPG 열량(17,060.2 Tcal)을 부피(2,506,293.2 kl)로 나눈 6,807.0 kcal/l를 부탄 총발열량 11,790 kcal/kg로 나눈 값이다. 보고서 본문에는 밀도 값이 적혀 있지 않으며, 이 환산이 보고서의 233.6 g/km를 재현한다. 다른 밀도를 쓰면 값이 달라진다(예: 0.584 kg/l이면 236.3 g/km). 09·10은 반올림하지 않은 08의 계수를 그대로 쓴다.
+| 구분 | 차량km 가중 연비 | gCO₂/km |
+| --- | --- | --- |
+| 경유 | 8.745 km/l | 297.34 |
+| LPG(부탄 가정) | 7.459 km/l | 233.65 |
+| 전기차 | 4.5 / 5.0 / 5.5 km/kWh | 92.20 / 82.98 / 75.44 |
+
+LPG 밀도 0.5773 kg/l는 에너지총조사 표 2-1-1의 승용 LPG 열량(17,060.2 Tcal)을 부피(2,506,293.2 kl)로 나눈 6,807.0 kcal/l를 부탄 총발열량 11,790 kcal/kg로 나눈 값이다. 보고서 본문에 밀도 값이 없어 이 방식으로 환산했고, 그 결과가 보고서의 233.6 g/km와 같다. 다른 밀도를 쓰면 값이 달라진다(예: 0.584 kg/l이면 236.3 g/km). 09·10은 반올림하지 않은 08의 계수를 그대로 쓴다.
 
 ## 탄소 분해와 감축 시나리오(09·10)
 
